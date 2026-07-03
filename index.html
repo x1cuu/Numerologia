@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Numerológico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12121c;
+    --ink-2:#191a28;
+    --card:#1d1e2e;
+    --card-line:#2c2d40;
+    --gold:#c9a24b;
+    --gold-dim:#8a723c;
+    --rose:#b85c6e;
+    --text:#ece8de;
+    --muted:#9793ab;
+    --sage:#7e9a83;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #262a44 0%, transparent 60%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    padding:48px 20px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:640px;margin:0 auto;}
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--gold);
+    text-align:center;
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(30px,6vw,42px);
+    text-align:center;
+    margin:0 0 8px;
+    letter-spacing:-.01em;
+  }
+  .sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:15px;
+    max-width:420px;
+    margin:0 auto 40px;
+    line-height:1.5;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:18px;
+    padding:32px;
+    margin-bottom:20px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:8px;
+    font-family:'Space Mono', monospace;
+  }
+  .field{margin-bottom:22px;}
+  input[type=text], input[type=date]{
+    width:100%;
+    background:var(--ink-2);
+    border:1px solid var(--card-line);
+    border-radius:10px;
+    padding:14px 16px;
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:16px;
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  input::-webkit-calendar-picker-indicator{filter:invert(0.75);cursor:pointer;}
+  input[type=text]:focus, input[type=date]:focus{border-color:var(--gold);}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4;}
+  button{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+    padding:15px 22px;
+    width:100%;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  button:active{transform:scale(.98);}
+  button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .btn-primary{background:var(--gold);color:#1a1610;}
+  .btn-primary:hover{opacity:.92;}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--card-line);
+    margin-top:8px;
+  }
+  .btn-ghost:hover{color:var(--text);border-color:var(--gold-dim);}
+  .btn-secondary{background:var(--ink-2);color:var(--text);border:1px solid var(--card-line);margin-top:14px;}
+  .btn-secondary:hover{border-color:var(--gold-dim);}
+  .error{color:var(--rose);font-size:13px;margin-top:6px;display:none;}
+
+  #resultSection{display:none;}
+  .sigil-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:8px 0 28px;
+  }
+  .sigil-name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:20px;
+    color:var(--text);
+    margin-top:14px;
+    text-align:center;
+  }
+  .sigil-caption{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .num-card{
+    border-top:1px solid var(--card-line);
+    padding:22px 0;
+    display:grid;
+    grid-template-columns:64px 1fr;
+    gap:18px;
+    align-items:start;
+  }
+  .num-card:first-of-type{border-top:none;padding-top:6px;}
+  .num-digit{
+    font-family:'Space Mono', monospace;
+    font-size:34px;
+    font-weight:700;
+    color:var(--gold);
+    line-height:1;
+    text-align:center;
+    padding-top:4px;
+  }
+  .num-body .num-label{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .num-body .num-title{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .num-body .num-desc{
+    font-size:14.5px;
+    line-height:1.55;
+    color:#d8d4c8;
+  }
+  .karmic-tag{
+    display:inline-block;
+    margin-top:10px;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    color:var(--rose);
+    border:1px solid rgba(184,92,110,.4);
+    background:rgba(184,92,110,.08);
+    border-radius:20px;
+    padding:5px 12px;
+  }
+
+  .message-card{margin-top:6px;}
+  .message-card h2{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .message-card p.hint{margin-bottom:16px;}
+  textarea{
+    width:100%;
+    min-height:340px;
+    background:var(--ink-2);
+    border:1px solid var(--card-line);
+    border-radius:10px;
+    padding:16px;
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:14px;
+    line-height:1.6;
+    resize:vertical;
+  }
+  .copy-feedback{
+    font-size:12px;
+    color:var(--sage);
+    text-align:center;
+    margin-top:10px;
+    height:14px;
+    font-family:'Space Mono', monospace;
+    letter-spacing:.05em;
+  }
+  @media (max-width:480px){
+    .card{padding:22px 18px;}
+    .num-card{grid-template-columns:44px 1fr;gap:12px;}
+    .num-digit{font-size:26px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="eyebrow">O Poder da Numerologia</div>
+  <h1>Mapa Numerológico</h1>
+  <p class="sub">Introduz o nome completo e a data de nascimento para gerar o mapa numerológico pitagórico — pronto a enviar.</p>
+
+  <section class="card" id="formSection">
+    <div class="field">
+      <label for="nameInput">Nome completo</label>
+      <input type="text" id="nameInput" placeholder="Ex: Maria Costa Silva" autocomplete="off">
+      <div class="hint">Usa o nome completo de nascimento, sem abreviaturas, para maior precisão.</div>
+    </div>
+    <div class="field">
+      <label for="dateInput">Data de nascimento</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div class="error" id="formError">Preenche o nome e a data de nascimento para continuar.</div>
+    <button class="btn-primary" id="calcBtn">Calcular Numerologia</button>
+  </section>
+
+  <section id="resultSection">
+
+    <div class="card">
+      <div class="sigil-wrap">
+        <div id="sigilSvg"></div>
+        <div class="sigil-name" id="resultName"></div>
+        <div class="sigil-caption">Selo numerológico pessoal</div>
+      </div>
+    </div>
+
+    <div class="card" id="numbersGrid"></div>
+
+    <div class="card message-card">
+      <h2>Mensagem para enviar</h2>
+      <p class="hint">Revê o texto, copia e envia diretamente para a pessoa.</p>
+      <textarea id="messageOutput" readonly></textarea>
+      <button class="btn-secondary" id="copyBtn">Copiar mensagem</button>
+      <div class="copy-feedback" id="copyFeedback"></div>
+    </div>
+
+    <button class="btn-ghost" id="resetBtn">Calcular numerologia para outra pessoa</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+  /* ---------- Pythagorean letter table ---------- */
+  var LETTER_VALUES = {
+    A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,
+    J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,
+    S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8
+  };
+  var VOWELS = ['A','E','I','O','U'];
+  var MASTERS = [11,22,33];
+  var KARMIC = [13,14,16,19];
+
+  function stripAccents(str){
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function onlyLetters(str){
+    return stripAccents(str).toUpperCase().replace(/[^A-Z]/g,'');
+  }
+  function digitSum(n){
+    return String(n).split('').reduce(function(a,d){return a+parseInt(d,10);},0);
+  }
+  // Reduces a number to a single digit unless it lands on a master number.
+  // Flags the first karmic-debt number (13/14/16/19) encountered on the way, if any.
+  function reduce(n){
+    var karmic = null;
+    var num = n;
+    if (KARMIC.indexOf(num) !== -1) karmic = num;
+    while (num > 9 && MASTERS.indexOf(num) === -1){
+      num = digitSum(num);
+      if (KARMIC.indexOf(num) !== -1 && karmic === null) karmic = num;
+    }
+    return {value:num, karmic:karmic};
+  }
+
+  function lettersSum(letters){
+    return letters.split('').reduce(function(a,ch){ return a + (LETTER_VALUES[ch]||0); },0);
+  }
+
+  function calcExpression(fullName){
+    var letters = onlyLetters(fullName);
+    return reduce(lettersSum(letters));
+  }
+  function calcSoul(fullName){
+    var letters = onlyLetters(fullName).split('').filter(function(ch){return VOWELS.indexOf(ch)!==-1;}).join('');
+    return reduce(lettersSum(letters));
+  }
+  function calcPersonality(fullName){
+    var letters = onlyLetters(fullName).split('').filter(function(ch){return VOWELS.indexOf(ch)===-1;}).join('');
+    return reduce(lettersSum(letters));
+  }
+  function calcLifePath(isoDate){
+    var parts = isoDate.split('-'); // yyyy-mm-dd
+    var digits = (parts[2] + parts[1] + parts[0]); // dd mm yyyy concatenated
+    var sum = digits.split('').reduce(function(a,d){return a+parseInt(d,10);},0);
+    return reduce(sum);
+  }
+  function calcPersonalYear(isoDate){
+    var parts = isoDate.split('-');
+    var day = parts[2], month = parts[1];
+    var year = String(new Date().getFullYear());
+    var digits = (day+month+year).split('').reduce(function(a,d){return a+parseInt(d,10);},0);
+    var num = digits;
+    while (num > 9){ num = digitSum(num); }
+    return num;
+  }
+
+  /* ---------- Content dictionaries (Numerologia Pitagórica) ---------- */
+  var LIFE_PATH = {
+    1:{title:"O Pioneiro", desc:"Vieste desenvolver independência, liderança, iniciativa e autoconfiança. Coragem e inovação marcam o teu caminho."},
+    2:{title:"O Cooperador", desc:"Vieste aprender a arte da parceria, da diplomacia e da sensibilidade emocional. Empatia e harmonia guiam-te."},
+    3:{title:"O Comunicador", desc:"Vieste expressar a tua criatividade, alegria e capacidade de inspirar os outros através da palavra e da arte."},
+    4:{title:"O Construtor", desc:"Vieste criar bases sólidas através do trabalho, da disciplina e da organização. Persistência é o teu dom."},
+    5:{title:"O Explorador", desc:"Vieste experimentar a liberdade, a mudança e a diversidade de experiências. Versatilidade é a tua força."},
+    6:{title:"O Cuidador", desc:"Vieste aprender sobre amor, responsabilidade, família e serviço ao próximo, num caminho de equilíbrio."},
+    7:{title:"O Sábio", desc:"Vieste aprofundar o conhecimento, a espiritualidade e a compreensão dos mistérios da vida."},
+    8:{title:"O Gestor", desc:"Vieste aprender a utilizar o poder pessoal de forma equilibrada e a manifestar prosperidade e realização."},
+    9:{title:"O Humanitário", desc:"Vieste desenvolver a compaixão, o altruísmo e o serviço à humanidade, com amor universal."},
+    11:{title:"O Iluminador", desc:"Missão de inspirar consciências através da intuição, da mediunidade e da canalização. Convida à confiança apesar da ansiedade que por vezes traz."},
+    22:{title:"O Mestre Construtor", desc:"Missão de materializar grandes obras para a humanidade, unindo visão estratégica a liderança global."},
+    33:{title:"O Mestre do Amor", desc:"Missão de servir através da cura e do amor incondicional, ensinando espiritualmente por onde passas."}
+  };
+  var SOUL = {
+    1:{title:"A Independente", desc:"Deseja autonomia, liderança e liberdade para seguir o seu próprio caminho. Precisa sentir-se livre para decidir e criar."},
+    2:{title:"A Harmonizadora", desc:"Procura amor, afeto, cooperação e relacionamentos equilibrados. Precisa sentir-se amada e valorizada."},
+    3:{title:"A Criativa", desc:"Deseja expressar-se, comunicar e partilhar alegria com os outros. Precisa ser ouvida e reconhecida pela sua criatividade."},
+    4:{title:"A Construtora", desc:"Procura estabilidade, segurança e bases sólidas. Precisa sentir confiança e ordem."},
+    5:{title:"A Livre", desc:"Anseia por aventura, mudança, novas experiências e expansão. Precisa sentir liberdade e movimento."},
+    6:{title:"A Amorosa", desc:"Deseja amar, cuidar, proteger e construir relações harmoniosas. Precisa sentir união, família e pertença."},
+    7:{title:"A Buscadora", desc:"Procura conhecimento, verdade e compreensão espiritual. Precisa encontrar significado para a vida."},
+    8:{title:"A Realizadora", desc:"Deseja prosperidade, reconhecimento e realização material. Precisa sentir-se capaz e bem-sucedida."},
+    9:{title:"A Humanitária", desc:"Procura servir, ajudar e contribuir para um mundo melhor. Precisa sentir que faz a diferença."},
+    11:{title:"A Inspiradora", desc:"Deseja elevar consciências, inspirar e viver uma forte ligação espiritual. Precisa expressar a sua luz e intuição."},
+    22:{title:"A Construtora de Sonhos", desc:"Deseja materializar projetos com impacto coletivo e duradouro. Precisa construir algo que beneficie muitos."},
+    33:{title:"A Curadora", desc:"Deseja amar incondicionalmente, ensinar e servir através da cura. Precisa ser um canal de amor e compaixão."}
+  };
+  var PERSONALITY = {
+    1:{title:"A Líder", desc:"É vista como forte, determinada, independente e confiante. Primeira impressão: alguém que gosta de tomar iniciativa."},
+    2:{title:"A Diplomata", desc:"É vista como gentil, sensível, cooperante e acolhedora. Primeira impressão: alguém tranquilo e harmonizador."},
+    3:{title:"A Comunicadora", desc:"É vista como alegre, criativa, sociável e expressiva. Primeira impressão: alguém divertido e comunicativo."},
+    4:{title:"A Construtora", desc:"É vista como organizada, responsável, prática e confiável. Primeira impressão: alguém sério e trabalhador."},
+    5:{title:"A Aventureira", desc:"É vista como dinâmica, livre, espontânea e versátil. Primeira impressão: alguém cheio de energia."},
+    6:{title:"A Protetora", desc:"É vista como carinhosa, prestável, equilibrada e responsável. Primeira impressão: alguém em quem se pode confiar."},
+    7:{title:"A Sábia", desc:"É vista como reservada, observadora, inteligente e misteriosa. Primeira impressão: alguém profundo e reflexivo."},
+    8:{title:"A Executiva", desc:"É vista como forte, ambiciosa, determinada e influente. Primeira impressão: alguém com presença e autoridade."},
+    9:{title:"A Humanitária", desc:"É vista como generosa, compassiva, inspiradora e altruísta. Primeira impressão: alguém com um grande coração."},
+    11:{title:"A Inspiradora", desc:"É vista como intuitiva, espiritual e inspiradora, com uma energia especial e magnética."},
+    22:{title:"A Construtora", desc:"É vista como capaz de concretizar grandes projetos. Primeira impressão: alguém visionário e competente."},
+    33:{title:"A Curadora", desc:"É vista como amorosa, acolhedora e dedicada ao bem-estar dos outros, transmitindo paz e sabedoria."}
+  };
+  var EXPRESSION = {
+    1:{title:"A Líder", desc:"Talento para liderar, inovar e abrir novos caminhos. Potencial de inspirar através da iniciativa e da coragem."},
+    2:{title:"A Mediadora", desc:"Talento para unir pessoas, cooperar e criar harmonia. Potencial de construir pontes e promover a paz."},
+    3:{title:"A Comunicadora", desc:"Talento para comunicar, ensinar, criar e inspirar. Potencial de expressar ideias e emoções de forma criativa."},
+    4:{title:"A Construtora", desc:"Talento para organizar, estruturar e concretizar projetos. Potencial de criar bases sólidas e duradouras."},
+    5:{title:"A Exploradora", desc:"Talento para se adaptar, inovar e viver novas experiências. Potencial de promover mudanças e expansão."},
+    6:{title:"A Cuidadora", desc:"Talento para cuidar, aconselhar, ensinar e harmonizar. Potencial de servir através do amor e da responsabilidade."},
+    7:{title:"A Investigadora", desc:"Talento para estudar, analisar e aprofundar conhecimentos. Potencial de descobrir verdades e transmitir sabedoria."},
+    8:{title:"A Realizadora", desc:"Talento para liderar, gerir recursos e alcançar resultados. Potencial de manifestar prosperidade e sucesso material."},
+    9:{title:"A Humanitária", desc:"Talento para ajudar, inspirar e servir a humanidade. Potencial de promover cura, compaixão e consciência coletiva."},
+    11:{title:"A Inspiradora", desc:"Forte potencial intuitivo e espiritual, capaz de inspirar e elevar os outros — um canal de luz e visão."},
+    22:{title:"A Grande Construtora", desc:"Capacidade de transformar sonhos em realidade e concretizar projetos de grande impacto coletivo."},
+    33:{title:"A Mestra Curadora", desc:"Dons de ensino, cura e serviço altruísta, com potencial de manifestar amor incondicional."}
+  };
+  var KARMIC_DEBT = {
+    13:{title:"Dívida Cármica 13/4", desc:"Aprendizagem ligada ao trabalho, à disciplina e à responsabilidade. Convite para transformar esforço em realização, evitando a procrastinação e o desânimo."},
+    14:{title:"Dívida Cármica 14/5", desc:"Aprendizagem ligada à liberdade e ao autocontrolo. Convite a encontrar equilíbrio entre liberdade e compromisso, evitando impulsividade e excessos."},
+    16:{title:"Dívida Cármica 16/7", desc:"Uma das aprendizagens mais profundas, ligada ao ego e à humildade espiritual. Convite a soltar o controlo e confiar na sabedoria da vida."},
+    19:{title:"Dívida Cármica 19/1", desc:"Aprendizagem ligada ao uso do poder pessoal. Convite a aprender a cooperar e a liderar sem dominar, servindo com humildade."}
+  };
+  var PERSONAL_YEAR = {
+    1:{title:"Ano de Novos Começos", desc:"Ano de ação, iniciativa e independência — ideal para começar projetos e assumir novos desafios."},
+    2:{title:"Ano de Cooperação e Paciência", desc:"Ano que pede diplomacia, parcerias e construção de relações. Paciência é a palavra-chave."},
+    3:{title:"Ano de Expressão e Criatividade", desc:"Ano leve, social e criativo — favorece comunicação, ensino e expansão pessoal."},
+    4:{title:"Ano de Trabalho e Estrutura", desc:"Ano de construção, organização e disciplina — a criar bases sólidas para o futuro."},
+    5:{title:"Ano de Mudança e Liberdade", desc:"Um dos anos mais movimentados do ciclo — traz mudanças, viagens e novas oportunidades."},
+    6:{title:"Ano de Amor e Responsabilidade", desc:"A atenção volta-se para a família, os relacionamentos e o equilíbrio entre dar e receber."},
+    7:{title:"Ano de Introspeção e Espiritualidade", desc:"Ano de recolhimento e reflexão — favorece estudos, terapias e desenvolvimento espiritual."},
+    8:{title:"Ano de Prosperidade e Realização", desc:"Ano de colheita — aquilo que foi semeado tende a manifestar-se de forma mais visível."},
+    9:{title:"Ano de Conclusão e Libertação", desc:"Último ano do ciclo — tempo de finalizar situações e preparar o novo ciclo que se inicia no Ano 1."}
+  };
+
+  function label(n){ return (MASTERS.indexOf(n)!==-1) ? String(n) : String(n); }
+
+  /* ---------- Sigil (personal seal) SVG ---------- */
+  function buildSigil(nums){
+    // nums: array of 4 numbers (lifePath, soul, personality, expression) each 1-9/11/22/33
+    var size = 220, cx = size/2, cy = size/2, r = 78;
+    function angleFor(n, i){
+      var norm = n > 9 ? (n===11?11:n===22?22:33) : n;
+      var frac = (norm % 9 === 0 ? 9 : norm % 9) / 9;
+      return (i*90 - 90) + (frac*70 - 35); // spread within each quadrant
+    }
+    var pts = nums.map(function(n,i){
+      var a = (angleFor(n,i)) * Math.PI/180;
+      return {x: cx + r*Math.cos(a), y: cy + r*Math.sin(a), n:n};
+    });
+    var pathD = "M " + pts.map(function(p){return p.x.toFixed(1)+","+p.y.toFixed(1);}).join(" L ") + " Z";
+    var dots = pts.map(function(p){
+      return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4.5" fill="#c9a24b"/>'+
+             '<text x="'+p.x.toFixed(1)+'" y="'+(p.y - 14).toFixed(1)+'" text-anchor="middle" font-family="Space Mono, monospace" font-size="13" fill="#ece8de">'+p.n+'</text>';
+    }).join('');
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">' +
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#2c2d40" stroke-width="1"/>' +
+      '<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="#8a723c"/>' +
+      '<path d="'+pathD+'" fill="rgba(201,162,75,0.08)" stroke="#c9a24b" stroke-width="1.4"/>' +
+      dots +
+      '</svg>';
+  }
+
+  /* ---------- DOM wiring ---------- */
+  var nameInput = document.getElementById('nameInput');
+  var dateInput = document.getElementById('dateInput');
+  var calcBtn = document.getElementById('calcBtn');
+  var formError = document.getElementById('formError');
+  var formSection = document.getElementById('formSection');
+  var resultSection = document.getElementById('resultSection');
+  var numbersGrid = document.getElementById('numbersGrid');
+  var sigilSvg = document.getElementById('sigilSvg');
+  var resultName = document.getElementById('resultName');
+  var messageOutput = document.getElementById('messageOutput');
+  var copyBtn = document.getElementById('copyBtn');
+  var copyFeedback = document.getElementById('copyFeedback');
+  var resetBtn = document.getElementById('resetBtn');
+
+  function numCardHTML(digitLabel, section, karmic){
+    var karmicHTML = '';
+    if (karmic){
+      karmicHTML = '<div class="karmic-tag">Dívida Cármica '+karmic+' — ver nota abaixo</div>';
+    }
+    return '<div class="num-card">'+
+      '<div class="num-digit">'+digitLabel+'</div>'+
+      '<div class="num-body">'+
+        '<div class="num-label">'+section.label+'</div>'+
+        '<div class="num-title">'+section.title+'</div>'+
+        '<div class="num-desc">'+section.desc+'</div>'+
+        karmicHTML+
+      '</div>'+
+    '</div>';
+  }
+
+  function formatDatePT(isoDate){
+    var p = isoDate.split('-');
+    return p[2]+'/'+p[1]+'/'+p[0];
+  }
+
+  calcBtn.addEventListener('click', function(){
+    var name = nameInput.value.trim();
+    var date = dateInput.value;
+    if (!name || !date || onlyLetters(name).length===0){
+      formError.style.display = 'block';
+      return;
+    }
+    formError.style.display = 'none';
+
+    var lifePath = calcLifePath(date);
+    var soul = calcSoul(name);
+    var personality = calcPersonality(name);
+    var expression = calcExpression(name);
+    var personalYear = calcPersonalYear(date);
+
+    var lp = LIFE_PATH[lifePath.value];
+    var sl = SOUL[soul.value];
+    var pe = PERSONALITY[personality.value];
+    var ex = EXPRESSION[expression.value];
+    var py = PERSONAL_YEAR[personalYear];
+
+    var karmicHits = [lifePath.karmic, soul.karmic, personality.karmic, expression.karmic].filter(function(k){return k!==null;});
+    var uniqueKarmic = karmicHits.filter(function(v,i,a){return a.indexOf(v)===i;});
+
+    // Build cards
+    var html = '';
+    html += numCardHTML(lifePath.value, {label:'Caminho de Vida', title:lp.title, desc:lp.desc}, lifePath.karmic);
+    html += numCardHTML(soul.value, {label:'Número da Alma', title:sl.title, desc:sl.desc}, soul.karmic);
+    html += numCardHTML(personality.value, {label:'Número da Personalidade', title:pe.title, desc:pe.desc}, personality.karmic);
+    html += numCardHTML(expression.value, {label:'Número de Expressão', title:ex.title, desc:ex.desc}, expression.karmic);
+    html += numCardHTML(personalYear, {label:'Ano Pessoal ('+new Date().getFullYear()+')', title:py.title, desc:py.desc}, null);
+
+    if (uniqueKarmic.length){
+      uniqueKarmic.forEach(function(k){
+        var kd = KARMIC_DEBT[k];
+        html += '<div class="num-card"><div class="num-digit" style="color:#b85c6e;">'+k+'</div><div class="num-body">'+
+          '<div class="num-label" style="color:#b85c6e;">Dívida Cármica</div>'+
+          '<div class="num-title">'+kd.title+'</div>'+
+          '<div class="num-desc">'+kd.desc+'</div>'+
+        '</div></div>';
+      });
+    }
+
+    numbersGrid.innerHTML = html;
+    sigilSvg.innerHTML = buildSigil([lifePath.value, soul.value, personality.value, expression.value]);
+    resultName.textContent = name;
+
+    // Build shareable message
+    var msg = '';
+    msg += '✨ MAPA NUMEROLÓGICO — ' + name + ' ✨\n';
+    msg += 'Data de nascimento: ' + formatDatePT(date) + '\n\n';
+
+    msg += '🔹 CAMINHO DE VIDA ' + lifePath.value + ' — ' + lp.title + '\n' + lp.desc + '\n\n';
+    msg += '🔹 NÚMERO DA ALMA ' + soul.value + ' — ' + sl.title + '\n' + sl.desc + '\n\n';
+    msg += '🔹 NÚMERO DA PERSONALIDADE ' + personality.value + ' — ' + pe.title + '\n' + pe.desc + '\n\n';
+    msg += '🔹 NÚMERO DE EXPRESSÃO ' + expression.value + ' — ' + ex.title + '\n' + ex.desc + '\n\n';
+    msg += '🔹 ANO PESSOAL ' + new Date().getFullYear() + ' — ' + py.title + '\n' + py.desc + '\n\n';
+
+    if (uniqueKarmic.length){
+      uniqueKarmic.forEach(function(k){
+        var kd = KARMIC_DEBT[k];
+        msg += '🔸 ' + kd.title + '\n' + kd.desc + '\n\n';
+      });
+    }
+
+    msg += '—\nOs números não definem o teu destino. Eles iluminam o caminho. ✨';
+
+    messageOutput.value = msg;
+    copyFeedback.textContent = '';
+
+    formSection.style.display = 'none';
+    resultSection.style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  copyBtn.addEventListener('click', function(){
+    messageOutput.select();
+    messageOutput.setSelectionRange(0, 999999);
+    var done = function(){
+      copyFeedback.textContent = 'Mensagem copiada ✓';
+      setTimeout(function(){ copyFeedback.textContent=''; }, 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(messageOutput.value).then(done).catch(function(){
+        document.execCommand('copy'); done();
+      });
+    } else {
+      document.execCommand('copy'); done();
+    }
+  });
+
+  resetBtn.addEventListener('click', function(){
+    nameInput.value = '';
+    dateInput.value = '';
+    formError.style.display = 'none';
+    resultSection.style.display = 'none';
+    formSection.style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+    nameInput.focus();
+  });
+
+})();
+</script>
+</body>
+</html>
